@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "applearn",
+    "slug": "snack-1d3cde47-bfc5-41d9-87ed-621c2fb8302b",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "permissions": [
+        "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION"
+      ]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff",
+        "permissions": [
+          "WRITE_EXTERNAL_STORAGE",
+          "READ_EXTERNAL_STORAGE"
+        ]
+      },
+      "package": "com.applearn.snackabc"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3ba2dba2-1c5d-4f9b-804f-38437f7b7380"
+      }
+    }
+  }
+}
