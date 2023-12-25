@@ -75,8 +75,23 @@ const OfflineScreen = ({ navigation }) => {
     });
   };
 
+  if (savedBooks.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text
+          style={{
+            fontFamily: 'Roboto_300Light',
+            fontSize: 16,
+            color: 'blue',
+          }}>
+          No books have been saved.
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View>
+    <View style={{ paddingBottom: 60 }}>
       <Text
         style={{ fontFamily: 'Roboto_500Medium', fontSize: 20, padding: 16 }}>
         Saved Books

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import Pdf from 'react-native-pdf';
 
 const PdfViewer = ({ route }) => {
@@ -9,7 +9,14 @@ const PdfViewer = ({ route }) => {
     console.error('Invalid source:', source);
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Pdf not found</Text>
+        <Text
+          style={{
+            fontFamily: 'Roboto_300Light',
+            fontSize: 16,
+            color: 'blue',
+          }}>
+          The Pdf for this book was not found
+        </Text>
       </View>
     );
   }

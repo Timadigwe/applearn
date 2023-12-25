@@ -7,6 +7,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { rh, rw } from '../../responsive';
 import { fetchBooks } from '../../utils/helpers';
 import Carousel from 'react-native-snap-carousel';
+import NetInfo from '@react-native-community/netinfo';
 
 const courseAreas = [
   {
@@ -43,6 +44,7 @@ const courseAreas = [
 
 const HomeScreen = () => {
   const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -52,9 +54,32 @@ const HomeScreen = () => {
       .catch((error) => console.error('Error fetching books:', error));
   }, []);
 
-  // if (books) {
-  //   console.log('book formats', books[0]);
-  // }
+  useEffect(() => {
+    const checkNetworkStatus = async () => {
+      const netInfoState = await NetInfo.fetch();
+
+      if (!netInfoState.isConnected) {
+        // Navigate to the offline screen
+        navigation.navigate('Offline Mode');
+      }
+    };
+
+    // Subscribe to network status changes
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (!state.isConnected) {
+        // Navigate to the offline screen
+        navigation.navigate('Offline Mode');
+      }
+    });
+
+    // Initial check
+    checkNetworkStatus();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -34,6 +34,10 @@ const HomeStack = () => {
           headerShown: false, // Set headerShown to false
         }}
       />
+      {/* <Stack.Screen
+        name="Offline Mode"
+        component={OfflineScreen}
+      /> */}
     </Stack.Navigator>
   );
 };
