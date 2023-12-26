@@ -1,4 +1,12 @@
-import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Alert,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,10 +16,11 @@ import { rh, rw } from '../../responsive';
 import { fetchBooks } from '../../utils/helpers';
 import Carousel from 'react-native-snap-carousel';
 import NetInfo from '@react-native-community/netinfo';
+import SkeletonContent from 'react-native-skeleton-content-nonexpo';
 
 const courseAreas = [
   {
-    name: 'Computer Science',
+    name: 'Psychology',
     color: '#D2DFFF',
     textColor: '#4E67A8',
   },
@@ -26,12 +35,12 @@ const courseAreas = [
     textColor: '#AA8957',
   },
   {
-    name: 'Mechanical Engineering',
+    name: 'Engineering',
     color: '#D2DFFF',
     textColor: '#4E67A8',
   },
   {
-    name: 'Banking and Finance',
+    name: 'Banking',
     color: '#E1FFBB',
     textColor: '#68893F',
   },
@@ -40,19 +49,38 @@ const courseAreas = [
     color: '#FFE4BB',
     textColor: '#AA8957',
   },
+  {
+    name: 'Finance',
+    color: '#FF3636',
+    textColor: 'white',
+  },
 ];
 
 const HomeScreen = () => {
   const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
 
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      // Show an alert if the search query is empty
+      Alert.alert('Error', 'Please enter a search query.');
+      return;
+    }
+    // Navigate to SearchScreen with the searchQuery
+    navigation.navigate('SearchScreen', { searchQuery });
+    setSearchQuery('');
+  };
+
   useEffect(() => {
-    const searchTerm = 'Mathematics'; // Replace with your desired search term
-    fetchBooks(searchTerm)
-      .then((data) => setBooks(data))
-      .catch((error) => console.error('Error fetching books:', error));
-  }, []);
+    const searchTerm = ''; // Replace with your desired search term
+    fetchBooks(searchTerm).then((data) => {
+      setBooks(data);
+      setLoading(false);
+    });
+    // .catch((error) => console.error('Error fetching books:', error));
+  }, [loading]);
 
   useEffect(() => {
     const checkNetworkStatus = async () => {
@@ -84,14 +112,44 @@ const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <HeaderMenu navigation={navigation} />
-      <SearchComponent />
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Carousel
-          data={books}
-          renderItem={({ item }) => renderItem({ item, navigation })}
-          sliderWidth={rw(400)}
-          itemWidth={rw(325)}
-        />
+      <SearchComponent
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleSearch={handleSearch}
+      />
+      <View
+        style={{
+          marginVertical: rh(20),
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <SkeletonContent
+          isLoading={loading}
+          containerStyle={{ width: '100%' }}
+          layout={[
+            {
+              key: 'someId',
+              width: '80%',
+              height: 340,
+              marginBottom: 6,
+              borderRadius: 20,
+            },
+            {
+              key: 'someOtherId',
+              width: '70%',
+              height: 20,
+              marginBottom: 6,
+              borderRadius: 10,
+              marginLeft: rw(10),
+            },
+          ]}>
+          <Carousel
+            data={books}
+            renderItem={({ item }) => renderItem({ item, navigation, loading })}
+            sliderWidth={rw(400)}
+            itemWidth={rw(325)}
+          />
+        </SkeletonContent>
       </View>
       <View style={styles.courseAreas}>
         <Text style={styles.text}>Course Areas</Text>
@@ -103,7 +161,7 @@ const HomeScreen = () => {
       <View style={{ paddingVertical: 20 }}>
         <FlatList
           data={courseAreas}
-          renderItem={renderCourseItem}
+          renderItem={({ item }) => renderCourseItem({ item, navigation })}
           keyExtractor={(item) => item.name}
           horizontal
         />
@@ -138,21 +196,28 @@ const HeaderMenu = ({ navigation }) => {
 };
 
 // Search component
-const SearchComponent = () => {
+const SearchComponent = ({ searchQuery, setSearchQuery, handleSearch }) => {
   return (
     <View style={styles.searchContainer}>
-      <FontAwesome
-        name="search"
-        size={18}
-        color={'#373F7899'}
-        style={styles.searchIcon}
+      <TouchableOpacity onPress={handleSearch}>
+        <FontAwesome
+          name="search"
+          size={18}
+          color={'#373F7899'}
+          style={styles.searchIcon}
+        />
+      </TouchableOpacity>
+      <TextInput
+        placeholder="Search Books"
+        style={styles.searchText}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
       />
-      <Text style={styles.searchText}>Search Books</Text>
     </View>
   );
 };
 
-const renderItem = ({ item, navigation }) => {
+const renderItem = ({ item, navigation, loading }) => {
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('BookDetailScreen', { book: item })}
@@ -167,12 +232,17 @@ const renderItem = ({ item, navigation }) => {
   );
 };
 
-const renderCourseItem = ({ item }) => (
-  <View style={[styles.courseItem, { backgroundColor: item.color }]}>
-    <Text style={[styles.itemText, { color: item.textColor }]}>
-      {item.name}
-    </Text>
-  </View>
+const renderCourseItem = ({ item, navigation }) => (
+  <TouchableOpacity
+    onPress={() => {
+      navigation.navigate('SearchScreen', { searchQuery: item.name });
+    }}>
+    <View style={[styles.courseItem, { backgroundColor: item.color }]}>
+      <Text style={[styles.itemText, { color: item.textColor }]}>
+        {item.name}
+      </Text>
+    </View>
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({

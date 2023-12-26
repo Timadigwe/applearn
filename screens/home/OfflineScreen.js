@@ -69,10 +69,24 @@ const OfflineScreen = ({ navigation }) => {
 
   // Function to handle book press
   const handleBookPress = (book) => {
-    // Navigate to PdfViewer screen with the PDF URL
-    navigation.navigate('PdfViewer', {
-      source: { uri: book.formats['application/pdf'] },
-    });
+    if (book.formats && book.formats['application/pdf']) {
+      // Handle PDF format
+      navigation.navigate('PdfViewer', {
+        source: { uri: book.formats['application/pdf'] },
+      });
+    } else if (
+      book.formats &&
+      (book.formats['text/plain; charset=us-ascii'] ||
+        book.formats['text/plain; charset=utf-8'])
+    ) {
+      // Handle text format
+      navigation.navigate('TextContentScreen', {
+        textContent: book.textContent,
+      });
+    } else {
+      // Handle the case when neither PDF nor text format is available
+      Alert.alert('Error', 'No supported format found for reading');
+    }
   };
 
   if (savedBooks.length === 0) {

@@ -5,6 +5,9 @@ import HomeScreen from '../screens/home/HomeScreen';
 import BookDetailScreen from '../screens/home/BookDetailScreen';
 import PdfViewer from '../screens/pdfViewer/PdfViewer';
 import OfflineScreen from '../screens/home/OfflineScreen';
+import SearchScreen from '../screens/home/SearchScreen';
+import CustomDrawerContent from '../screens/home/CustomDrawerContent';
+import TextContentScreen from '../screens/home/TextContentScreen';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -34,10 +37,17 @@ const HomeStack = () => {
           headerShown: false, // Set headerShown to false
         }}
       />
-      {/* <Stack.Screen
-        name="Offline Mode"
-        component={OfflineScreen}
-      /> */}
+      <Stack.Screen
+        name="TextContentScreen"
+        component={TextContentScreen}
+        options={{
+          headerShown: false, // Set headerShown to false
+        }}
+      />
+      <Stack.Screen
+        name="SearchScreen"
+        component={SearchScreen}
+      />
     </Stack.Navigator>
   );
 };
@@ -45,7 +55,8 @@ const HomeStack = () => {
 // Drawer navigator containing the HomeStack
 const HomeNavigator = () => {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}>
       <Drawer.Screen
         name="Home"
         component={HomeStack}

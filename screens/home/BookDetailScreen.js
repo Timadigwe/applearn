@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -16,30 +17,62 @@ import * as FileSystem from 'expo-file-system';
 
 const BookDetailScreen = ({ route }) => {
   const { book } = route.params;
+  const [textContent, setTextContent] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
   console.log('books param', book);
 
-  const handleReadBook = () => {
+  const handleReadBook = async () => {
     try {
-      // Assume 'book.formats["application/pdf"]' is the PDF URL
-      const pdfUrl = book.formats['application/pdf'];
+      setIsLoading(true); // Set loading state to true
 
-      console.log('PDF URL:', pdfUrl);
+      if (book.formats && book.formats['application/pdf']) {
+        // Handle PDF format
+        const pdfUrl = book.formats['application/pdf'];
+        console.log('PDF URL:', pdfUrl);
+        const source = { uri: pdfUrl };
+        navigation.navigate('PdfViewer', { source });
+      } else if (
+        book.formats &&
+        (book.formats['text/plain; charset=us-ascii'] ||
+          book.formats['text/plain; charset=utf-8'])
+      ) {
+        // Handle text format
+        const textUrl =
+          book.formats['text/plain; charset=us-ascii'] ||
+          book.formats['text/plain; charset=utf-8'];
 
-      const source = { uri: pdfUrl, cache: true };
-      // Navigate to PdfViewer screen with the PDF URL
-      navigation.navigate('PdfViewer', { source });
+        //console.log('Text URL:', textUrl);
+
+        // Fetch the text content
+        const response = await fetch(textUrl);
+        const textContent = await response.text();
+        setTextContent(textContent);
+
+        // Navigate to a new screen and pass the text content as a parameter
+        navigation.navigate('TextContentScreen', { textContent });
+      } else {
+        // Handle the case when neither PDF nor text format is available
+        Alert.alert('Error', 'No supported format found for reading');
+      }
     } catch (error) {
-      console.error('Error opening PDF:', error);
-      Alert.alert('Error', 'Could not open PDF');
+      console.error('Error opening book:', error);
+      Alert.alert('Error', 'Could not open the book');
+    } finally {
+      setIsLoading(false); // Set loading state to false after completion
     }
   };
 
   const handleSaveForLater = async () => {
     try {
+      if (!textContent) {
+        Alert.alert('Error', 'No content to save for offline reading');
+        return;
+      }
+
       // Convert book object to JSON string
-      const bookData = JSON.stringify(book);
+      const bookData = JSON.stringify({ ...book, textContent });
 
       // Create a file with a unique name (you may use book ID or another unique identifier)
       const fileName = `book_${book.id}.json`;
@@ -100,13 +133,25 @@ const BookDetailScreen = ({ route }) => {
         </View>
         <TouchableOpacity
           style={styles.readButton}
-          onPress={handleReadBook}>
-          <Text style={styles.readButtonText}>Read Book</Text>
+          onPress={handleReadBook}
+          disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator
+              size="small"
+              color="#fff"
+            />
+          ) : (
+            <Text style={styles.readButtonText}>Read Book</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.previewButton}
           onPress={handleSaveForLater}>
-          <Text style={styles.previewButtonText}>Save for later</Text>
+          <Text
+            style={styles.previewButtonText}
+            disabled={isLoading}>
+            Save for later
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
