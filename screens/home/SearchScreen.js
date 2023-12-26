@@ -44,10 +44,17 @@ const SearchScreen = ({ navigation, route }) => {
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => handleBookPress(item)}>
       <View style={styles.bookItem}>
-        <Image
-          source={{ uri: item.image }}
-          style={styles.bookImage}
-        />
+        {!item.image ? (
+          <Image
+            source={require('../../assets/default.jpg')}
+            style={styles.bookImage}
+          />
+        ) : (
+          <Image
+            source={{ uri: item.image }}
+            style={styles.bookImage}
+          />
+        )}
         <Text style={styles.bookTitle}>{item.title}</Text>
       </View>
     </TouchableOpacity>

@@ -30,7 +30,7 @@ const OfflineScreen = ({ navigation }) => {
       // Update the state with the loaded books
       setSavedBooks(booksData);
     } catch (error) {
-      console.error('Error loading saved books:', error);
+      //console.error('Error loading saved books:', error);
     }
   };
 
@@ -50,10 +50,17 @@ const OfflineScreen = ({ navigation }) => {
           alignItems: 'center',
           padding: 16,
         }}>
-        <Image
-          source={{ uri: item.image }}
-          style={{ width: rw(100), height: rh(100), borderRadius: 10 }}
-        />
+        {!item.image ? (
+          <Image
+            source={require('../../assets/default.jpg')}
+            style={{ width: rw(100), height: rh(100), borderRadius: 10 }}
+          />
+        ) : (
+          <Image
+            source={{ uri: item.image }}
+            style={{ width: rw(100), height: rh(100), borderRadius: 10 }}
+          />
+        )}
         <Text
           style={{
             fontFamily: 'Roboto_400Regular',

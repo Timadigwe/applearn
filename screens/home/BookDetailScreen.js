@@ -19,6 +19,7 @@ const BookDetailScreen = ({ route }) => {
   const { book } = route.params;
   const [textContent, setTextContent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoading2, setIsLoading2] = useState(false);
   const navigation = useNavigation();
 
   console.log('books param', book);
@@ -30,7 +31,7 @@ const BookDetailScreen = ({ route }) => {
       if (book.formats && book.formats['application/pdf']) {
         // Handle PDF format
         const pdfUrl = book.formats['application/pdf'];
-        console.log('PDF URL:', pdfUrl);
+        //console.log('PDF URL:', pdfUrl);
         const source = { uri: pdfUrl };
         navigation.navigate('PdfViewer', { source });
       } else if (
@@ -65,14 +66,42 @@ const BookDetailScreen = ({ route }) => {
   };
 
   const handleSaveForLater = async () => {
+    setIsLoading2(true);
     try {
-      if (!textContent) {
-        Alert.alert('Error', 'No content to save for offline reading');
+      let contentToSave;
+
+      // Check if the PDF format is available
+      if (book.formats && book.formats['application/pdf']) {
+        const pdfUrl = book.formats['application/pdf'];
+        contentToSave = { type: 'pdf', uri: pdfUrl };
+      }
+      // If PDF is not available, check for text format
+      else if (
+        book.formats &&
+        (book.formats['text/plain; charset=us-ascii'] ||
+          book.formats['text/plain; charset=utf-8'])
+      ) {
+        const textUrl =
+          book.formats['text/plain; charset=us-ascii'] ||
+          book.formats['text/plain; charset=utf-8'];
+
+        // Fetch the text content
+        const response = await fetch(textUrl);
+        const textContent = await response.text();
+        contentToSave = { type: 'text', content: textContent };
+        setIsLoading2(false);
+      } else {
+        setIsLoading2(false);
+        // If neither PDF nor text format is available
+        Alert.alert('Error', 'No supported format found for offline reading');
         return;
       }
 
-      // Convert book object to JSON string
-      const bookData = JSON.stringify({ ...book, textContent });
+      // Convert book object to JSON string and add content information
+      const bookData = JSON.stringify({
+        ...book,
+        content: contentToSave,
+      });
 
       // Create a file with a unique name (you may use book ID or another unique identifier)
       const fileName = `book_${book.id}.json`;
@@ -86,9 +115,11 @@ const BookDetailScreen = ({ route }) => {
       // Write the book data to the file
       await FileSystem.writeAsStringAsync(`${directory}${fileName}`, bookData);
 
+      setIsLoading2(false);
       // Show an alert or perform any other action to indicate success
       Alert.alert('Success', 'Book saved for offline reading.');
     } catch (error) {
+      setIsLoading2(false);
       console.error('Error saving book:', error);
       Alert.alert('Error', 'Could not save book for offline reading.');
     }
@@ -110,11 +141,19 @@ const BookDetailScreen = ({ route }) => {
           <Text style={styles.headerText}>Book Details</Text>
         </View>
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: book.image }}
-            style={styles.bookImage}
-            resizeMode="contain"
-          />
+          {!book.image ? (
+            <Image
+              source={require('../../assets/default.jpg')}
+              style={styles.bookImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <Image
+              source={{ uri: book.image }}
+              style={styles.bookImage}
+              resizeMode="contain"
+            />
+          )}
         </View>
         <View style={styles.bookDetails}>
           <Text style={styles.title}>{book.title}</Text>
@@ -147,11 +186,18 @@ const BookDetailScreen = ({ route }) => {
         <TouchableOpacity
           style={styles.previewButton}
           onPress={handleSaveForLater}>
-          <Text
-            style={styles.previewButtonText}
-            disabled={isLoading}>
-            Save for later
-          </Text>
+          {isLoading2 ? (
+            <ActivityIndicator
+              size="small"
+              color="#fff"
+            />
+          ) : (
+            <Text
+              style={styles.previewButtonText}
+              disabled={isLoading2}>
+              Save for later
+            </Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

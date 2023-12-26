@@ -222,11 +222,19 @@ const renderItem = ({ item, navigation, loading }) => {
     <TouchableOpacity
       onPress={() => navigation.navigate('BookDetailScreen', { book: item })}
       style={styles.carousel}>
-      <Image
-        source={{ uri: item.image }}
-        style={{ width: '80%', height: 340, borderRadius: 20 }}
-        resizeMode="contain"
-      />
+      {!item.image ? (
+        <Image
+          source={require('../../assets/default.jpg')}
+          style={{ width: '80%', height: 340, borderRadius: 20 }}
+          resizeMode="contain"
+        />
+      ) : (
+        <Image
+          source={{ uri: item.image }}
+          style={{ width: '80%', height: 340, borderRadius: 20 }}
+          resizeMode="contain"
+        />
+      )}
       <Text style={styles.title}>{item.title.slice(0, 50)}...</Text>
     </TouchableOpacity>
   );

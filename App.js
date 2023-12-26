@@ -47,3 +47,5 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+//https://expo.dev/artifacts/eas/dit8uKrwMytdWhNVkmaFU7.apk
